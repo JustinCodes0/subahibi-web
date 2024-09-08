@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SubaHibi",
-  description: "A web-version of Subarashiki Hibi ~Furenzoku Sonzai",
+  title: "Wonderful Everyday",
+  description: "A web-version of Wonderful Everyday: Diskontinuierliches Dasein or Subarashiki Hibi ~Furenzoku Sonzai (SubaHibi) by KeroQ.",
 };
 
 export default function RootLayout({
