@@ -23,7 +23,6 @@ def main():
     for subdir in subdirs:
         print(f"Processing subdirectory: {subdir}")
 
-        # Initialize a set to keep track of processed files
         processed_files = set()
 
         while True:
@@ -32,7 +31,7 @@ def main():
                     'git', 'ls-files', '--others', '--modified', '--exclude-standard', '--', subdir
                 ])
             except subprocess.CalledProcessError as e:
-                print("Error getting list of files:", e)
+                print(f"Error getting list of files in {subdir}: {e}")
                 sys.exit(1)
 
             all_files = result.decode().splitlines()
@@ -45,32 +44,23 @@ def main():
             batch_files = unprocessed_files[:batch_size]
             processed_files.update(batch_files)
 
-            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
-                for f in batch_files:
-                    temp.write(f + '\n')
-                temp_filename = temp.name
-
+            temp_filename = None
             try:
+                with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
+                    for f in batch_files:
+                        temp.write(f + '\n')
+                    temp_filename = temp.name
+
                 subprocess.run(['git', 'add', '--pathspec-from-file=' + temp_filename], check=True)
-            except subprocess.CalledProcessError as e:
-                print("Error adding files:", e)
-                sys.exit(1)
-
-            try:
                 subprocess.run(['git', 'commit', '-m', f'Batch commit for {subdir}'], check=True)
-            except subprocess.CalledProcessError as e:
-                print("Error committing files:", e)
-                sys.exit(1)
-
-            try:
                 subprocess.run(['git', 'push', 'origin', branch], check=True)
+                print(f"Processed {len(batch_files)} files in {subdir}.")
             except subprocess.CalledProcessError as e:
-                print("Error pushing to remote:", e)
+                print(f"Error during Git operations: {e}")
                 sys.exit(1)
-
-            os.remove(temp_filename)
-
-            print(f"Processed {len(batch_files)} files in {subdir}.")
+            finally:
+                if temp_filename and os.path.exists(temp_filename):
+                    os.remove(temp_filename)
 
     print("All subdirectories processed.")
 
