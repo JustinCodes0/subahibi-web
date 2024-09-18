@@ -25,16 +25,25 @@ def main():
 
         while True:
             try:
-                result = subprocess.check_output([
-                    'git', 'ls-files', '--others', '--modified', '--exclude-standard', '--', subdir
-                ])
+                result = subprocess.check_output(['git', 'status', '--porcelain', '--', subdir])
             except subprocess.CalledProcessError as e:
-                print("Error getting list of files:", e)
+                print("Error getting status of files:", e)
                 sys.exit(1)
 
-            files = result.decode().splitlines()
-            if not files:
+            lines = result.decode().splitlines()
+            if not lines:
                 print(f"No more files to process in {subdir}.")
+                break
+
+            files = []
+            for line in lines:
+                status = line[:2]
+                file_path = line[3:]
+                if status.strip() in ('??', 'M', 'A', 'AM', 'MM', 'D', 'R', 'C', 'U'):
+                    files.append(file_path)
+
+            if not files:
+                print(f"No untracked or modified files to process in {subdir}.")
                 break
 
             batch_files = files[:batch_size]
@@ -61,8 +70,12 @@ def main():
             try:
                 subprocess.run(['git', 'commit', '-m', f'Batch commit for {subdir}'], check=True)
             except subprocess.CalledProcessError as e:
-                print("Error committing files:", e)
-                sys.exit(1)
+                if 'nothing to commit' in e.output.decode():
+                    print("Nothing to commit in this batch.")
+                    continue
+                else:
+                    print("Error committing files:", e)
+                    sys.exit(1)
 
             try:
                 subprocess.run(['git', 'push', 'origin', branch], check=True)
@@ -71,6 +84,8 @@ def main():
                 sys.exit(1)
 
             print(f"Processed {len(batch_files)} files in {subdir}.")
+
+        print(f"Finished processing subdirectory: {subdir}")
 
     print("All subdirectories processed.")
 
