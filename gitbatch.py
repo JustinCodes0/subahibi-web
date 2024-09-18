@@ -1,13 +1,13 @@
 import os
 import sys
 import subprocess
-import tempfile
 import argparse
+import tempfile
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('folder')
-    parser.add_argument('--batch_size', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=25)
     parser.add_argument('--branch', default='master')
 
     args = parser.parse_args()
@@ -40,7 +40,7 @@ def main():
             batch_files = files[:batch_size]
 
             try:
-                subprocess.run(['git', 'add'] + batch_files, check=True)
+                subprocess.run(['git', 'add', '--'] + batch_files, check=True)
             except subprocess.CalledProcessError as e:
                 print("Error adding files:", e)
                 sys.exit(1)
