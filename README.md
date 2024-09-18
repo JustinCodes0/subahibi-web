@@ -1,2 +1,2 @@
 # subahibi-web
-A web-version for the Visual Novel Subarashiki Hibi ~Furenzoku Sonzai or "Wonderful Everyday: Diskontinuierliches Dasein" by KeroQ. 
+A web-version of the Visual Novel Wonderful Everyday: Diskontinuierliches Dasein or Subarashiki Hibi ~Furenzoku Sonzai (SubaHibi) by KeroQ. 
